@@ -1,0 +1,23 @@
+name: demo-ci-pipeline
+stages:
+  - name: build
+    jobs:
+      - name: compile
+        image: openjdk:21
+        script:
+          - javac -d out src/*.java
+
+  - name: test
+    jobs:
+      - name: unit-tests
+        image: openjdk:21
+        script:
+          - java -cp out TestMain
+
+  - name: deploy
+    jobs:
+      - name: dockerize
+        image: docker:latest
+        script:
+          - docker build -t demo-app .
+          - docker run -d -p 8080:8080 demo-app
