@@ -1,23 +1,36 @@
-name: demo-ci-pipeline
+pipeline:
+  name: "vtxflow-ci"
+
 stages:
-  - name: build
-    jobs:
-      - name: compile
-        image: openjdk:21
-        script:
-          - javac -d out src/*.java
+  - build
+  - test
 
-  - name: test
-    jobs:
-      - name: unit-tests
-        image: openjdk:21
-        script:
-          - java -cp out TestMain
+jobs:
+  # Build Stage
+  - name: "build-package"
+    stage: "build"
+    image: "gradle:8.13-jdk21"
+    script:
+      - "echo 'Current directory:' && pwd"
+      - "echo 'Files in current dir:' && ls -la"
+      - "./gradlew build -x test"
+    artifacts:
+      paths:
+        - "build/libs/*.jar"
+      expire_in: "7 days"
+    allow_failure: true
 
-  - name: deploy
-    jobs:
-      - name: dockerize
-        image: docker:latest
-        script:
-          - docker build -t demo-app .
-          - docker run -d -p 8080:8080 demo-app
+  # Test Stage
+  - name: "run-tests"
+    stage: "test"
+    image: "gradle:8.13-jdk21"
+    script:
+      - "./gradlew test"
+    needs:
+      - "build-package"
+    artifacts:
+      paths:
+        - "build/reports/tests"
+      expire_in: "7 days"
+    allow_failure: true
+

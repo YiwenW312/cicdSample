@@ -1,8 +1,0 @@
-name: test-pipeline
-stages:
-  - name: test-stage
-    jobs:
-      - name: sample-test
-        image: openjdk:21
-        script:
-          - echo "Running sample test..."
